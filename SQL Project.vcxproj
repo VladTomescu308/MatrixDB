@@ -19,16 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="Table.cpp" />
-    <ClCompile Include="Tokenizer.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Parser.cpp" />
+    <ClCompile Include="src\Table.cpp" />
+    <ClCompile Include="src\Tokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Parser.h" />
-    <ClInclude Include="SQLStatement.h" />
-    <ClInclude Include="Table.h" />
-    <ClInclude Include="Tokenizer.h" />
+    <ClInclude Include="src\Parser.h" />
+    <ClInclude Include="src\SQLStatement.h" />
+    <ClInclude Include="src\Table.h" />
+    <ClInclude Include="src\Tokenizer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
