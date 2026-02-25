@@ -40,4 +40,9 @@
 # debug information files
 *.dwo
 
+# Build folders
+x64/
+x86/
+Debug/
+Release/
 .vs/
