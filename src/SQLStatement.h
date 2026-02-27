@@ -7,11 +7,14 @@ enum class StatementType {
     CREATE_TABLE,
     INSERT,
     SELECT,
+    // DELETE,
+    // DROP_TABLE,
+    UNKNOWN
 };
 
 // Base struct for all statements (Polymorphism)
 struct SQLStatement {
-    StatementType type;
+    StatementType type = StatementType::UNKNOWN;
     virtual ~SQLStatement() = default;
 };
 
@@ -35,7 +38,7 @@ struct InsertStatement : public SQLStatement {
 struct SelectStatement : public SQLStatement {
     SelectStatement() { type = StatementType::SELECT; }
 
-    std::vector<Table::Column> columns;
+    std::vector<std::string> columns;
     std::string tableName;
 
     // WHERE
@@ -43,3 +46,11 @@ struct SelectStatement : public SQLStatement {
     std::string filterOperator;
     std::string filterValue;
 };
+
+// struct DeleteStatement : public SQLStatement {
+// 
+// };
+// 
+// struct DropStatement : public SQLStatement {
+// 
+// };

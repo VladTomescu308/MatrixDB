@@ -5,7 +5,9 @@
 
 int main() {
     // std::string command = "CREATE table employees (id INTEGER, name TEXT, salary FLOAT);";
-    std::string command = "INSERT INTO employees VALUES (1, 'Mihnea', 465.69);";
+    // std::string command = "INSERT INTO employees VALUES (1, 'Mihnea', 465.69);";
+    // std::string command = "SELECT id, name, salary FROM employees;";
+     std::string command = "SELECT id, name, salary FROM employees WHERE salary < 14;";
 
     std::cout << "Command  : " << command << "\n";
 
@@ -16,7 +18,7 @@ int main() {
 
         std::cout << "Tokenized: ";
         for (auto token : tokens) {
-            std::cout << token.value << " ";
+            std::cout << token.type << " ";
         }
         std::cout << "\n" << std::string(50, '-') << "\n";
 
@@ -39,17 +41,39 @@ int main() {
             }
         }
         else if (statement && statement->type == StatementType::INSERT) {
-            auto* insertStatement = dynamic_cast<InsertStatement*>(statement.get());
+            auto* insertStmt = dynamic_cast<InsertStatement*>(statement.get());
 
             std::cout << "SUCCESS: Parser built an INSERT object.\n";
-            std::cout << "Target Table: " << insertStatement->tableName << "\n";
+            std::cout << "Target Table: " << insertStmt->tableName << "\n";
             std::cout << "Values Found: ";
 
-            for (const auto& val : insertStatement->values) {
+            for (const auto& val : insertStmt->values) {
                 std::cout << val << " ";
             }
 
             std::cout << "(All strings)" << "\n";
+        }
+        else if (statement && statement->type == StatementType::SELECT) {
+            auto* selectStmt = dynamic_cast<SelectStatement*>(statement.get());
+
+            std::cout << "SUCCESS: Parser built a SELECT object.\n";
+            std::cout << "Target Table: " << selectStmt->tableName << "\n";
+            std::cout << "Columns Found: ";
+
+            for (const auto& col : selectStmt->columns) {
+                std::cout << col << " ";
+            }
+            
+            if (selectStmt->filterColumn == "") { // !!!
+                std::cout << "\n\nWHERE clause was not used\n";
+            }
+            else {
+                std::cout << "\n\nWHERE clause was used";
+                std::cout << "\nFilter column: " << selectStmt->filterColumn;
+                std::cout << "\nFilter operator: " << selectStmt->filterOperator;
+                std::cout << "\nFilter value: " << selectStmt->filterValue;
+                std::cout << "\n";
+            }
         }
     }
     catch (const std::exception& e) {

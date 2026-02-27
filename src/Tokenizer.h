@@ -11,8 +11,11 @@ enum class TokenType {
     // Data Types
     INTEGER, TEXT, FLOAT,
 
-    // Symbols & Operators
-    LPAREN, RPAREN, COMMA, STAR, EQUALS, SEMICOLON,
+    // Symbols 
+    LPAREN, RPAREN, COMMA, STAR, SEMICOLON,
+
+    // Operators
+    LOWER, GREATER, EQUALS, //LOWER_EQUALS, GREATER_EQUALS,
 
     // Identifiers & Literals
     IDENTIFIER,     // e.g., table names, column names
@@ -25,9 +28,9 @@ enum class TokenType {
 };
 
 struct Token {
-    TokenType type;
+    TokenType type = TokenType::UNKNOWN;
     std::string value;
-    int position;
+    int position = 0;
 };
 
 class Tokenizer {

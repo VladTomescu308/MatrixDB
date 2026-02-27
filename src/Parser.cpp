@@ -113,10 +113,70 @@ std::unique_ptr<InsertStatement> Parser::parse_insert() {
     return stmt;
 }
 
+/// SELECT * FROM users;
 /// SELECT id, name FROM users WHERE balance > 1000;
 std::unique_ptr<SelectStatement> Parser::parse_select() {
 
     auto stmt = std::make_unique<SelectStatement>();
+
+    bool parsingColumns = true;
+    while (parsingColumns) {
+
+        if (match(TokenType::IDENTIFIER)) {
+            auto column = consume(TokenType::IDENTIFIER, "Expected a column name");
+            stmt->columns.push_back(column.value);
+        }
+        else if (match(TokenType::COMMA)) {
+            advance();
+        }
+        else if (match(TokenType::FROM)) {
+            parsingColumns = false;
+            advance();
+            break;
+        }
+        else if (match(TokenType::STAR)) {
+            // !!!!!!!!!
+            throw std::runtime_error("* case not implemented yet");
+        }
+        else throw std::runtime_error("Expected 'FROM' after column names");
+    }
+
+    auto table = consume(TokenType::IDENTIFIER, "Expected a table name");
+    stmt->tableName = table.value;
+
+    if (!match(TokenType::WHERE)) {
+        return stmt;
+    }
+    
+    advance();
+
+    auto filterColumn = consume(TokenType::IDENTIFIER, "Expected a column name for the condition");
+    stmt->filterColumn = filterColumn.value;
+
+    switch (current().type) {
+    case TokenType::EQUALS:
+    case TokenType::LOWER:
+    case TokenType::GREATER:
+    // case TokenType::LOWER_EQUALS:
+    // case TokenType::GREATER_EQUALS:
+        stmt->filterOperator = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a comparison operator (=, <, >)");
+    }
+
+    switch (current().type) {
+    case TokenType::INT_LITERAL:
+    case TokenType::FLOAT_LITERAL:
+    case TokenType::STRING_LITERAL:
+        stmt->filterValue = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a filter value (int, string, float)");
+    }
+
     return stmt;
 }
 
@@ -127,8 +187,6 @@ DataType Parser::parse_data_type() {
 
     throw std::runtime_error("Expected column data type (INTEGER, TEXT, FLOAT)");
 }
-
-
 
 // --- Navigation Helpers ---
 
@@ -143,6 +201,12 @@ void Parser::advance() {
 
 bool Parser::match(TokenType type) const {
     return current().type == type;
+}
+
+Token Parser::consume() {
+    Token token = current();
+    advance();
+    return token; 
 }
 
 Token Parser::consume(TokenType type, const std::string& error_message) {
