@@ -16,8 +16,8 @@ bool Table::insert_row(const std::vector<std::string>& row_data) {
         return false;
     }
 
-    // Later, we can add logic here to check if an INTEGER column 
-    // actually contains a number, but for now, we just save it!
+    // Later, add logic here to check if an INTEGER column 
+    // actually contains a number, we just save it for now!
     m_rows.push_back(row_data);
     return true;
 }
@@ -52,4 +52,13 @@ const std::vector<Table::Column>& Table::get_columns() const {
 
 const std::vector<std::vector<std::string>>& Table::get_rows() const {
     return m_rows;
+}
+
+std::ostream& operator<<(std::ostream& os, DataType type) {
+    switch (type) {
+    case DataType::INTEGER: return os << "INTEGER";
+    case DataType::TEXT:    return os << "TEXT";
+    case DataType::FLOAT:   return os << "FLOAT";
+    default:                return os << "UNKNOWN";
+    }
 }

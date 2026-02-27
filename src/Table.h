@@ -41,3 +41,5 @@ private:
     // The Matrix: A vector of rows, where each row is a vector of strings
     std::vector<std::vector<std::string>> m_rows;
 };
+
+std::ostream& operator<<(std::ostream& os, DataType type);

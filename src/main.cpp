@@ -4,15 +4,21 @@
 #include "Parser.h"
 
 int main() {
-    std::string command = "CREATE TABLE employees (id INTEGER, name TEXT, salary FLOAT);";
+    // std::string command = "CREATE table employees (id INTEGER, name TEXT, salary FLOAT);";
+    std::string command = "INSERT INTO employees VALUES (1, 'Mihnea', 465.69);";
 
-    std::cout << "Executing: " << command << "\n";
-    std::cout << std::string(50, '-') << "\n";
+    std::cout << "Command  : " << command << "\n";
 
     try {
         // 1. Tokenize
         Tokenizer tokenizer(command);
         std::vector<Token> tokens = tokenizer.tokenize();
+
+        std::cout << "Tokenized: ";
+        for (auto token : tokens) {
+            std::cout << token.value << " ";
+        }
+        std::cout << "\n" << std::string(50, '-') << "\n";
 
         // 2. Parse
         Parser parser(tokens);
@@ -29,8 +35,21 @@ int main() {
 
             for (const auto& col : createStmt->columns) {
                 std::cout << "  - " << col.name
-                    << " (Type ID: " << (int)col.type << ")\n";
+                    << " (Type: " << col.type << ")\n";
             }
+        }
+        else if (statement && statement->type == StatementType::INSERT) {
+            auto* insertStatement = dynamic_cast<InsertStatement*>(statement.get());
+
+            std::cout << "SUCCESS: Parser built an INSERT object.\n";
+            std::cout << "Target Table: " << insertStatement->tableName << "\n";
+            std::cout << "Values Found: ";
+
+            for (const auto& val : insertStatement->values) {
+                std::cout << val << " ";
+            }
+
+            std::cout << "(All strings)" << "\n";
         }
     }
     catch (const std::exception& e) {

@@ -22,5 +22,7 @@ private:
 
     // Parsing specific commands
     std::unique_ptr<CreateStatement> parse_create_table();
+    std::unique_ptr<InsertStatement> parse_insert();
+    std::unique_ptr<SelectStatement> parse_select();
     DataType parse_data_type();
 };

@@ -10,35 +10,33 @@ std::unique_ptr<SQLStatement> Parser::parse() {
     }
 
     if (match(TokenType::CREATE)) {
+        advance();
+        consume(TokenType::TABLE, "Expected 'TABLE' after 'CREATE'");
         return parse_create_table();
     }
 
-	if (match(TokenType::INSERT)) {
-		advance();
-		if (match(TokenType::INTO)) {
-            advance();
-            // return parse_insert();
-        }
+    if (match(TokenType::INSERT)) {
+        advance();
+        consume(TokenType::INTO, "Expected 'INTO' after 'INSERT'");
+        return parse_insert();
     }
 
-	if (match(TokenType::SELECT)) {
+    if (match(TokenType::SELECT)) {
         advance();
-        // return parse_select();
+        return parse_select();
     }
 
     throw std::runtime_error("Unsupported or unrecognized command.");
 }
 
+/// CREATE TABLE users (id INTEGER, name TEXT, balance FLOAT);
 std::unique_ptr<CreateStatement> Parser::parse_create_table() {
-    advance();
-
-    consume(TokenType::TABLE, "Expected 'TABLE' after 'CREATE'");
 
     auto stmt = std::make_unique<CreateStatement>();
 
     // 1. Get the table name
-    Token nameToken = consume(TokenType::IDENTIFIER, "Expected table name");
-    stmt->tableName = nameToken.value;
+    Token tableToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    stmt->tableName = tableToken.value;
 
     // 2. Open parentheses
     consume(TokenType::LPAREN, "Expected '(' after table name");
@@ -67,6 +65,58 @@ std::unique_ptr<CreateStatement> Parser::parse_create_table() {
     // 4. Require a semicolon at the end
     consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
 
+    return stmt;
+}
+
+/// INSERT INTO users VALUES (1, Alice, 4500.50);
+std::unique_ptr<InsertStatement> Parser::parse_insert() {
+
+    auto stmt = std::make_unique<InsertStatement>();
+
+    Token tableToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    stmt->tableName = tableToken.value;
+
+    consume(TokenType::VALUES, "Expected 'VALUES'");
+
+    consume(TokenType::LPAREN, "Expected '(' after 'VALUES'");
+
+    bool parsingRows = true;
+    while (parsingRows) {
+
+        Token valueToken;
+
+        if (match(TokenType::STRING_LITERAL)) {
+            valueToken = consume(TokenType::STRING_LITERAL, "Expected a string value ex:'Alice'");
+        }
+        else if (match(TokenType::INT_LITERAL)) {
+            valueToken = consume(TokenType::INT_LITERAL, "Expected an int value");
+        }
+        else if (match(TokenType::FLOAT_LITERAL)) {
+            valueToken = consume(TokenType::FLOAT_LITERAL, "Expected a float value");
+        }
+
+        stmt->values.push_back(valueToken.value);
+
+        if (match(TokenType::COMMA)) {
+            advance();
+        }
+        else if (match(TokenType::RPAREN))
+        {
+            parsingRows = false;
+            advance();
+        }
+        else {
+            throw std::runtime_error("Expected ',' or ')' in column definition");
+        }
+    }
+
+    return stmt;
+}
+
+/// SELECT id, name FROM users WHERE balance > 1000;
+std::unique_ptr<SelectStatement> Parser::parse_select() {
+
+    auto stmt = std::make_unique<SelectStatement>();
     return stmt;
 }
 
