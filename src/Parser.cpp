@@ -35,6 +35,7 @@ std::unique_ptr<SQLStatement> Parser::parse() {
     if (match(TokenType::DROP)) {
         advance();
         consume(TokenType::TABLE, "Expected 'TABLE' after 'DROP'");
+        return parse_drop_table();
     }
 
     throw std::runtime_error("Unsupported or unrecognized command.");

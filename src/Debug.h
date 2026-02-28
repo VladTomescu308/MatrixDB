@@ -41,7 +41,7 @@ inline void TestSelect(const std::unique_ptr<SQLStatement>& statement) {
         std::cout << col << " ";
     }
 
-    if (selectStmt->filterColumn == "") { // !!!
+    if (selectStmt->filterColumn == "") {
         std::cout << "\n\nWHERE clause was not used\n";
     }
     else {
@@ -51,6 +51,38 @@ inline void TestSelect(const std::unique_ptr<SQLStatement>& statement) {
         std::cout << "\nFilter value: " << selectStmt->filterValue;
         std::cout << "\n";
     }
+}
+
+inline void TestDelete(const std::unique_ptr<SQLStatement>& statement) {
+    auto* selectStmt = dynamic_cast<DeleteStatement*>(statement.get());
+
+    std::cout << "SUCCESS: Parser built a DELETE object.\n";
+    std::cout << "Target Table: " << selectStmt->tableName << "\n";
+
+    if (selectStmt->filterColumn == "") {
+        std::cout << "\n\nWHERE clause was not used\n";
+    }
+    else {
+        std::cout << "\nWHERE clause was used";
+        std::cout << "\nFilter column: " << selectStmt->filterColumn;
+        std::cout << "\nFilter operator: " << selectStmt->filterOperator;
+        std::cout << "\nFilter value: " << selectStmt->filterValue;
+        std::cout << "\n";
+    }
+}
+
+inline void TestDropTable(const std::unique_ptr<SQLStatement>& statement) {
+    auto* selectStmt = dynamic_cast<DropTableStatement*>(statement.get());
+
+    std::cout << "SUCCESS: Parser built a DROP TABLE object.\n";
+    std::cout << "Target Table: " << selectStmt->tableName << "\n";
+    
+    // if (selectStmt->ifExistsCondition) {
+    //     std::cout << "\nIF EXISTS clause was used\n";
+    // }
+    // else {
+    //     std::cout << "\nIF EXISTS clause was not used\n";
+    // }
 }
 
 inline void TestObjects(std::string command) {
@@ -88,11 +120,11 @@ inline void TestObjects(std::string command) {
         break;
 
     case StatementType::DELETE:
-        // TestDelete(statement);
+        TestDelete(statement);
         break;
 
     case StatementType::DROP_TABLE:
-        // TestDrop(statement);
+        TestDropTable(statement);
         break;
 
     default:
