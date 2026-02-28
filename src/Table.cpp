@@ -18,6 +18,7 @@ bool Table::insert_row(const std::vector<std::string>& row_data) {
 
     // Later, add logic here to check if an INTEGER column 
     // actually contains a number, we just save it for now!
+
     m_rows.push_back(row_data);
     return true;
 }

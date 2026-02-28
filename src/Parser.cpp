@@ -26,6 +26,17 @@ std::unique_ptr<SQLStatement> Parser::parse() {
         return parse_select();
     }
 
+    if (match(TokenType::DELETE)) {
+        advance();
+        consume(TokenType::FROM, "Expected 'FROM' after 'Delete'");
+        return parse_delete();
+    }
+
+    if (match(TokenType::DROP)) {
+        advance();
+        consume(TokenType::TABLE, "Expected 'TABLE' after 'DROP'");
+    }
+
     throw std::runtime_error("Unsupported or unrecognized command.");
 }
 
@@ -180,6 +191,62 @@ std::unique_ptr<SelectStatement> Parser::parse_select() {
     return stmt;
 }
 
+// DELETE FROM users;
+// DELETE FROM users WHERE id = 10;
+std::unique_ptr<DeleteStatement> Parser::parse_delete() {
+
+    auto stmt = std::make_unique<DeleteStatement>();
+
+    auto tableName = consume(TokenType::IDENTIFIER, "Expected a table name");
+    stmt->tableName = tableName.value;
+
+    if (!match(TokenType::WHERE)) {
+        return stmt;
+    }
+    
+    advance();
+
+    auto filterColumn = consume(TokenType::IDENTIFIER, "Expected a filter column");
+    stmt->filterColumn = filterColumn.value;
+
+    switch (current().type) {
+    case TokenType::EQUALS:
+    case TokenType::LOWER:
+    case TokenType::GREATER:
+        // case TokenType::LOWER_EQUALS:
+        // case TokenType::GREATER_EQUALS:
+        stmt->filterOperator = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a comparison operator (=, <, >)");
+    }
+
+    switch (current().type) {
+    case TokenType::INT_LITERAL:
+    case TokenType::FLOAT_LITERAL:
+    case TokenType::STRING_LITERAL:
+        stmt->filterValue = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a filter value (int, string, float)");
+    }
+
+    return stmt;
+}
+
+// DROP TABLE users;
+std::unique_ptr<DropTableStatement> Parser::parse_drop_table() {
+
+    auto stmt = std::make_unique<DropTableStatement>();
+
+    auto tableName = consume(TokenType::IDENTIFIER, "Expected table name");
+    stmt->tableName = tableName.value;
+
+    return stmt;
+}
+
 DataType Parser::parse_data_type() {
     if (match(TokenType::INTEGER)) { advance(); return DataType::INTEGER; }
     if (match(TokenType::TEXT)) { advance(); return DataType::TEXT; }
@@ -201,12 +268,6 @@ void Parser::advance() {
 
 bool Parser::match(TokenType type) const {
     return current().type == type;
-}
-
-Token Parser::consume() {
-    Token token = current();
-    advance();
-    return token; 
 }
 
 Token Parser::consume(TokenType type, const std::string& error_message) {

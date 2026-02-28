@@ -15,7 +15,7 @@ enum class TokenType {
     LPAREN, RPAREN, COMMA, STAR, SEMICOLON,
 
     // Operators
-    LOWER, GREATER, EQUALS, //LOWER_EQUALS, GREATER_EQUALS,
+    LOWER, GREATER, EQUALS, //LOWER_EQUALS, GREATER_EQUALS,              WIP
 
     // Identifiers & Literals
     IDENTIFIER,     // e.g., table names, column names

@@ -25,6 +25,7 @@
     <ClCompile Include="src\Tokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\SQLStatement.h" />
     <ClInclude Include="src\Table.h" />

@@ -7,8 +7,8 @@ enum class StatementType {
     CREATE_TABLE,
     INSERT,
     SELECT,
-    // DELETE,
-    // DROP_TABLE,
+    DELETE,
+    DROP_TABLE,
     UNKNOWN
 };
 
@@ -47,10 +47,26 @@ struct SelectStatement : public SQLStatement {
     std::string filterValue;
 };
 
-// struct DeleteStatement : public SQLStatement {
-// 
-// };
-// 
-// struct DropStatement : public SQLStatement {
-// 
-// };
+// DELETE FROM users;
+// DELETE FROM users WHERE id = 10;
+struct DeleteStatement : public SQLStatement {
+    DeleteStatement() { type = StatementType::DELETE; }
+
+    std::string tableName;
+
+    // WHERE
+    std::string filterColumn;
+    std::string filterOperator;
+    std::string filterValue;
+};
+
+// DROP TABLE users;
+// DROP TABLE IF EXISTS students;
+struct DropTableStatement : public SQLStatement {
+    DropTableStatement() { type = StatementType::DROP_TABLE; }
+
+    std::string tableName;
+
+    // IF EXISTS
+    bool ifExistsCondition = false;
+};

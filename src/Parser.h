@@ -18,14 +18,13 @@ private:
     const Token& current() const;
     void advance();
     bool match(TokenType type) const;
-    Token consume();
     Token consume(TokenType type, const std::string& error_message);
 
     // Parsing specific commands
     std::unique_ptr<CreateStatement> parse_create_table();
     std::unique_ptr<InsertStatement> parse_insert();
     std::unique_ptr<SelectStatement> parse_select();
-    // std::unique_ptr<DeleteStatement> parse_delete();
-    // std::unique_ptr<DropStatement>   parse_drop_table();
+    std::unique_ptr<DeleteStatement> parse_delete();
+    std::unique_ptr<DropTableStatement> parse_drop_table();
     DataType parse_data_type();
 };

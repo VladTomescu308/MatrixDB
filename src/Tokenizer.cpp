@@ -134,7 +134,7 @@ Token Tokenizer::consume_number() {
 }
 
 Token Tokenizer::consume_string() {
-    advance(); // Skip opening quote
+    advance();
     size_t start = m_pos;
 
     while (current() != '\'' && current() != '\0') {
@@ -144,7 +144,7 @@ Token Tokenizer::consume_string() {
     std::string value = m_input.substr(start, m_pos - start);
 
     if (current() == '\'') {
-        advance(); // Skip closing quote
+        advance();
     }
 
     return { TokenType::STRING_LITERAL, value, static_cast<int>(start - 1) };
@@ -153,33 +153,33 @@ Token Tokenizer::consume_string() {
 // Printer formatting
 std::ostream& operator<<(std::ostream& os, TokenType type) {
     switch (type) {
-    case TokenType::SELECT: return os << "SELECT";
-    case TokenType::INSERT: return os << "INSERT";
-    case TokenType::UPDATE: return os << "UPDATE";
-    case TokenType::DELETE: return os << "DELETE";
-    case TokenType::CREATE: return os << "CREATE";
-    case TokenType::DROP:   return os << "DROP";
-    case TokenType::TABLE:  return os << "TABLE";
-    case TokenType::INTO:   return os << "INTO";
-    case TokenType::VALUES: return os << "VALUES";
-    case TokenType::FROM:   return os << "FROM";
-    case TokenType::WHERE:  return os << "WHERE";
-    case TokenType::INTEGER: return os << "INTEGER";
-    case TokenType::TEXT:    return os << "TEXT";
-    case TokenType::FLOAT:   return os << "FLOAT";
-    case TokenType::LPAREN:  return os << "LPAREN";
-    case TokenType::RPAREN:  return os << "RPAREN";
-    case TokenType::COMMA:   return os << "COMMA";
-    case TokenType::STAR:    return os << "STAR";
-    case TokenType::EQUALS:  return os << "EQUALS";
-    case TokenType::LOWER:   return os << "LOWER";
-    case TokenType::GREATER: return os << "GREATER";
-    case TokenType::SEMICOLON: return os << "SEMICOLON";
-    case TokenType::IDENTIFIER: return os << "IDENTIFIER";
+    case TokenType::SELECT:         return os << "SELECT";
+    case TokenType::INSERT:         return os << "INSERT";
+    case TokenType::UPDATE:         return os << "UPDATE";
+    case TokenType::DELETE:         return os << "DELETE";
+    case TokenType::CREATE:         return os << "CREATE";
+    case TokenType::DROP:           return os << "DROP";
+    case TokenType::TABLE:          return os << "TABLE";
+    case TokenType::INTO:           return os << "INTO";
+    case TokenType::VALUES:         return os << "VALUES";
+    case TokenType::FROM:           return os << "FROM";
+    case TokenType::WHERE:          return os << "WHERE";
+    case TokenType::INTEGER:        return os << "INTEGER";
+    case TokenType::TEXT:           return os << "TEXT";
+    case TokenType::FLOAT:          return os << "FLOAT";
+    case TokenType::LPAREN:         return os << "LPAREN";
+    case TokenType::RPAREN:         return os << "RPAREN";
+    case TokenType::COMMA:          return os << "COMMA";
+    case TokenType::STAR:           return os << "STAR";
+    case TokenType::EQUALS:         return os << "EQUALS";
+    case TokenType::LOWER:          return os << "LOWER";
+    case TokenType::GREATER:        return os << "GREATER";
+    case TokenType::SEMICOLON:      return os << "SEMICOLON";
+    case TokenType::IDENTIFIER:     return os << "IDENTIFIER";
     case TokenType::STRING_LITERAL: return os << "STRING_LITERAL";
-    case TokenType::INT_LITERAL: return os << "INT_LITERAL";
-    case TokenType::FLOAT_LITERAL: return os << "FLOAT_LITERAL";
-    case TokenType::END_OF_FILE: return os << "EOF";
+    case TokenType::INT_LITERAL:    return os << "INT_LITERAL";
+    case TokenType::FLOAT_LITERAL:  return os << "FLOAT_LITERAL";
+    case TokenType::END_OF_FILE:    return os << "EOF";
     default: return os << "UNKNOWN";
     }
 }
