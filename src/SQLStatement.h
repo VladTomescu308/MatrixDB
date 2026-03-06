@@ -70,3 +70,16 @@ struct DropTableStatement : public SQLStatement {
     // IF EXISTS
     bool ifExistsCondition = false;
 };
+
+inline std::ostream& operator<<(std::ostream& os, StatementType type) {
+    switch (type) {
+    case StatementType::CREATE_TABLE: os << "CREATE_TABLE"; break;
+    case StatementType::INSERT:       os << "INSERT";       break;
+    case StatementType::SELECT:       os << "SELECT";       break;
+    case StatementType::DELETE:       os << "DELETE";       break;
+    case StatementType::DROP_TABLE:   os << "DROP_TABLE";   break;
+    case StatementType::UNKNOWN:      os << "UNKNOWN";      break;
+    default:                          os << "[Invalid Type]"; break;
+    }
+    return os;
+}

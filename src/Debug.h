@@ -77,6 +77,7 @@ inline void TestDropTable(const std::unique_ptr<SQLStatement>& statement) {
     std::cout << "SUCCESS: Parser built a DROP TABLE object.\n";
     std::cout << "Target Table: " << selectStmt->tableName << "\n";
     
+    // To be added in the future
     // if (selectStmt->ifExistsCondition) {
     //     std::cout << "\nIF EXISTS clause was used\n";
     // }
@@ -85,25 +86,8 @@ inline void TestDropTable(const std::unique_ptr<SQLStatement>& statement) {
     // }
 }
 
-inline void TestObjects(std::string command) {
+inline void TestObject(std::unique_ptr<SQLStatement>& statement) {
 
-    std::cout << "Command  : " << command << "\n";
-
-    /// 1. Tokenize
-    Tokenizer tokenizer(command);
-    std::vector<Token> tokens = tokenizer.tokenize();
-
-    std::cout << "Tokenized: ";
-    for (auto token : tokens) {
-        std::cout << token.type << " ";
-    }
-    std::cout << "\n" << std::string(50, '-') << "\n";
-
-    /// 2. Parse
-    Parser parser(tokens);
-    std::unique_ptr<SQLStatement> statement = parser.parse();
-
-    /// 3. Prove it worked
     if (!statement) return; // to handle null pointers
 
     switch (statement->type) {

@@ -106,6 +106,9 @@ std::unique_ptr<InsertStatement> Parser::parse_insert() {
         else if (match(TokenType::FLOAT_LITERAL)) {
             valueToken = consume(TokenType::FLOAT_LITERAL, "Expected a float value");
         }
+        else {
+            throw std::runtime_error("Expected a valid value (String, Int, or Float).");
+        }
 
         stmt->values.push_back(valueToken.value);
 
@@ -122,6 +125,7 @@ std::unique_ptr<InsertStatement> Parser::parse_insert() {
         }
     }
 
+    consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
 }
 
@@ -157,6 +161,7 @@ std::unique_ptr<SelectStatement> Parser::parse_select() {
     stmt->tableName = table.value;
 
     if (!match(TokenType::WHERE)) {
+        consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
         return stmt;
     }
     
@@ -189,6 +194,7 @@ std::unique_ptr<SelectStatement> Parser::parse_select() {
         throw std::runtime_error("Expected a filter value (int, string, float)");
     }
 
+    consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
 }
 
@@ -202,6 +208,7 @@ std::unique_ptr<DeleteStatement> Parser::parse_delete() {
     stmt->tableName = tableName.value;
 
     if (!match(TokenType::WHERE)) {
+        consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
         return stmt;
     }
     
@@ -234,6 +241,7 @@ std::unique_ptr<DeleteStatement> Parser::parse_delete() {
         throw std::runtime_error("Expected a filter value (int, string, float)");
     }
 
+    consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
 }
 
@@ -245,6 +253,7 @@ std::unique_ptr<DropTableStatement> Parser::parse_drop_table() {
     auto tableName = consume(TokenType::IDENTIFIER, "Expected table name");
     stmt->tableName = tableName.value;
 
+    consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
 }
 
