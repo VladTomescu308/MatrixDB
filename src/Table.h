@@ -17,16 +17,11 @@ public:
         DataType type;
     };
 
-    // Constructor
     explicit Table(const std::string& name);
 
-    // Schema Management
     void add_column(const std::string& name, DataType type);
-
-    // Data Management
     bool insert_row(const std::vector<std::string>& row_data);
 
-    // Display
     void print_table() const;
 
     // Getters
