@@ -9,38 +9,116 @@ void Table::add_column(const std::string& name, DataType type) {
 }
 
 bool Table::insert_row(const std::vector<std::string>& row_data) {
+
     if (row_data.size() != m_columns.size()) {
-        std::cerr << "Error: Table '" << m_name << "' expects "
-            << m_columns.size() << " values, but got "
-            << row_data.size() << ".\n";
+        std::cerr << "\033[31mError:\033[0m Table '" << m_name << "' expects "
+            << m_columns.size() << " values, but got " << row_data.size() << ".\n";
         return false;
     }
 
-    // Later, add logic here to check if an INTEGER column 
-    // actually contains a number, we just save it for now!
+    for (int i = 0; i < m_columns.size(); i++) {
+        try {
+            if (m_columns[i].type == DataType::INTEGER) {
+                (void)std::stoi(row_data[i]);
+            }
+            else if (m_columns[i].type == DataType::FLOAT) {
+                (void)std::stof(row_data[i]);
+            }
+        }
+        catch (const std::invalid_argument& e) {
+            std::cerr << "\033[31mValidation Error:\033[0m Column '" << m_columns[i].name
+                << "' expects a number, but got '" << row_data[i] << "'.\n";
+            return false;
+        }
+        catch (const std::out_of_range& e) {
+            std::cerr << "\033[31mValidation Error:\033[0m Value '" << row_data[i]
+                << "' is out of range for column '" << m_columns[i].name << "'.\n";
+            return false;
+        }
+    }
 
     m_rows.push_back(row_data);
     return true;
 }
 
 void Table::print_table() const {
-    std::cout << "\nTABLE: " << m_name << "\n";
-    std::cout << std::string(50, '=') << "\n";
 
-    // 1. Print Header
-    for (const auto& col : m_columns) {
-        std::cout << std::left << std::setw(15) << col.name;
+    const int cell_width = 18;
+
+    std::string separator = "";
+    for (size_t i = 0; i < m_columns.size(); ++i) {
+        separator += "+" + std::string(cell_width + 2, '-');
     }
-    std::cout << "\n" << std::string(50, '-') << "\n";
+    separator += "+";
 
-    // 2. Print Data (The Matrix)
+    std::cout << "\nTABLE: " << m_name << "\n";
+
+    std::cout << separator << "\n";
+
+    for (const auto& col : m_columns) {
+        std::cout << "| " << std::left << std::setw(cell_width) << col.name << " ";
+    }
+    std::cout << "|\n";
+
+    std::cout << separator << "\n";
+
     for (const auto& row : m_rows) {
         for (const auto& cell : row) {
-            std::cout << std::left << std::setw(15) << cell;
+            std::cout << "| " << std::left << std::setw(cell_width) << cell << " ";
         }
-        std::cout << "\n";
+        std::cout << "|\n";
     }
-    std::cout << std::string(50, '=') << "\n\n";
+
+    std::cout << separator << "\n\n";   
+}
+
+void Table::print_table(std::vector<std::string>& columns) const {
+    
+    std::vector<int> col_indicies;
+
+    for (const auto& col : columns) {
+        bool found = false;
+        for (size_t i = 0; i < m_columns.size(); ++i) {
+            if (m_columns[i].name == col) {
+                col_indicies.push_back(i);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            std::cerr << "\033[31mError:\033[0m column '" << col << "' does not exist.\n";
+            return;
+        }
+    }
+
+    const int cell_width = 18;
+
+    std::string separator = "";
+    for (size_t i = 0; i < columns.size(); ++i) {
+        separator += "+" + std::string(cell_width + 2, '-');
+    }
+    separator += "+";
+
+    std::cout << "\nTABLE: " << m_name << "\n";
+
+    std::cout << separator << "\n";
+
+    
+    for (const auto& col : columns) {
+        std::cout << "| " << std::left << std::setw(cell_width) << col << " ";
+    }
+    std::cout << "|\n";
+
+    std::cout << separator << "\n";
+
+    for (const auto& row : m_rows) {
+        for (size_t i : col_indicies) {
+            std::cout << "| " << std::left << std::setw(cell_width) << row[i] << " ";
+        }
+        std::cout << "|\n";
+    }
+
+    std::cout << separator << "\n\n";
 }
 
 std::string Table::get_name() const {
