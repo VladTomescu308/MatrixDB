@@ -103,10 +103,17 @@ int main() {
 
                 auto* selectStmt = dynamic_cast<SelectStatement*>(statement.get());
                 auto it = database.find(selectStmt->tableName);
-                if (it != database.end()) {
+
+                if (selectStmt->columns[0] == "*") {
+                    Table& table = it->second;
+                    table.print_table();
+                }
+
+                else if (it != database.end()) {
                     Table& table = it->second;
                     table.print_table(selectStmt->columns);
                 }
+                
                 else {
                     std::cerr << ANSI_COLOR_RED << "Error: " << ANSI_COLOR_RESET << "Table '" << selectStmt->tableName << "' doesn't exist.\n";
                     continue;

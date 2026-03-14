@@ -205,27 +205,54 @@ std::unique_ptr<InsertStatement> Parser::parse_insert() {
 std::unique_ptr<SelectStatement> Parser::parse_select() {
 
     auto stmt = std::make_unique<SelectStatement>();
-
     bool parsingColumns = true;
+    bool foundStar = false;
+    bool expectComma = false;
+
     while (parsingColumns) {
 
-        if (match(TokenType::IDENTIFIER)) {
+        if (match(TokenType::IDENTIFIER) && !foundStar) {
+            if (expectComma) {
+                 throw std::runtime_error("Expected ',' between column names");
+            }
             auto column = consume(TokenType::IDENTIFIER, "Expected a column name");
             stmt->columns.push_back(column.value);
+            expectComma = true;
         }
-        else if (match(TokenType::COMMA)) {
+
+        else if (match(TokenType::COMMA) && !foundStar ) {
+            if (!expectComma) {
+                throw std::runtime_error("Unexpected ',' in column list");
+            }
+            expectComma = false;
             advance();
         }
+
+        else if (match(TokenType::STAR)) {
+            if (expectComma || !stmt->columns.empty()) {
+                throw std::runtime_error("Cannot mix '*' with specific columns or commas");
+            }
+
+            stmt->columns.push_back("*");
+            foundStar = true;
+            expectComma = true;
+            advance();
+        }
+
         else if (match(TokenType::FROM)) {
+            if (!expectComma && !stmt->columns.empty()) {
+                throw std::runtime_error("Unexpected 'FROM' after comma");
+            }
             parsingColumns = false;
             advance();
             break;
         }
-        else if (match(TokenType::STAR)) {
-            // !!!!!!!!!
-            throw std::runtime_error("* case not implemented yet");
-        }
+
         else throw std::runtime_error("Expected 'FROM' after column names");
+    }
+
+    if (stmt->columns.empty()) {
+        throw std::runtime_error("Expected at least one column or '*' after SELECT");
     }
 
     auto table = consume(TokenType::IDENTIFIER, "Expected a table name");
