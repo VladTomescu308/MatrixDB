@@ -14,7 +14,7 @@ private:
     const std::vector<Token>& m_tokens;
     size_t m_pos;
 
-    // Helpers to navigate the tokens safely
+    // Helpers to navigate the tokens
     const Token& current() const;
     void advance();
     bool match(TokenType type) const;
@@ -26,5 +26,7 @@ private:
     std::unique_ptr<SelectStatement> parse_select();
     std::unique_ptr<DeleteStatement> parse_delete();
     std::unique_ptr<DropTableStatement> parse_drop_table();
+
     DataType parse_data_type();
+    WhereClause parse_where();
 };

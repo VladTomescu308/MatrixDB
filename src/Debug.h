@@ -41,14 +41,14 @@ inline void TestSelect(const std::unique_ptr<SQLStatement>& statement) {
         std::cout << col << " ";
     }
 
-    if (selectStmt->filterColumn == "") {
+    if (!selectStmt->whereClause.has_where) {
         std::cout << "\n\nWHERE clause was not used\n";
     }
     else {
         std::cout << "\n\nWHERE clause was used";
-        std::cout << "\nFilter column: " << selectStmt->filterColumn;
-        std::cout << "\nFilter operator: " << selectStmt->filterOperator;
-        std::cout << "\nFilter value: " << selectStmt->filterValue;
+        std::cout << "\nFilter column: " << selectStmt->whereClause.column;
+        std::cout << "\nFilter operator: " << selectStmt->whereClause.op;
+        std::cout << "\nFilter value: " << selectStmt->whereClause.value;
         std::cout << "\n";
     }
 }
@@ -59,14 +59,14 @@ inline void TestDelete(const std::unique_ptr<SQLStatement>& statement) {
     std::cout << "SUCCESS: Parser built a DELETE object.\n";
     std::cout << "Target Table: " << selectStmt->tableName << "\n";
 
-    if (selectStmt->filterColumn == "") {
+    if (!selectStmt->whereClause.has_where) {
         std::cout << "\n\nWHERE clause was not used\n";
     }
     else {
-        std::cout << "\nWHERE clause was used";
-        std::cout << "\nFilter column: " << selectStmt->filterColumn;
-        std::cout << "\nFilter operator: " << selectStmt->filterOperator;
-        std::cout << "\nFilter value: " << selectStmt->filterValue;
+        std::cout << "\n\nWHERE clause was used";
+        std::cout << "\nFilter column: " << selectStmt->whereClause.column;
+        std::cout << "\nFilter operator: " << selectStmt->whereClause.op;
+        std::cout << "\nFilter value: " << selectStmt->whereClause.value;
         std::cout << "\n";
     }
 }

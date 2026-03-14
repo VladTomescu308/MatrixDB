@@ -12,6 +12,13 @@ enum class StatementType {
     UNKNOWN
 };
 
+struct WhereClause {
+    bool has_where = false;
+    std::string column;
+    std::string op;
+    std::string value;
+};
+
 // Base struct for all statements (Polymorphism)
 struct SQLStatement {
     StatementType type = StatementType::UNKNOWN;
@@ -41,10 +48,7 @@ struct SelectStatement : public SQLStatement {
     std::vector<std::string> columns;
     std::string tableName;
 
-    // WHERE
-    std::string filterColumn;
-    std::string filterOperator;
-    std::string filterValue;
+    WhereClause whereClause;
 };
 
 // DELETE FROM users;
@@ -54,10 +58,7 @@ struct DeleteStatement : public SQLStatement {
 
     std::string tableName;
 
-    // WHERE
-    std::string filterColumn;
-    std::string filterOperator;
-    std::string filterValue;
+    WhereClause whereClause;
 };
 
 // DROP TABLE users;

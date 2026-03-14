@@ -4,6 +4,77 @@ Parser::Parser(const std::vector<Token>& tokens)
     : m_tokens(tokens), m_pos(0) {
 }
 
+// --- Navigation Helpers ---
+
+const Token& Parser::current() const {
+    if (m_pos >= m_tokens.size()) return m_tokens.back(); // Return EOF if out of bounds
+    return m_tokens[m_pos];
+}
+
+void Parser::advance() {
+    if (m_pos < m_tokens.size()) m_pos++;
+}
+
+bool Parser::match(TokenType type) const {
+    return current().type == type;
+}
+
+Token Parser::consume(TokenType type, const std::string& error_message) {
+    if (match(type)) {
+        Token token = current();
+        advance();
+        return token;
+    }
+    throw std::runtime_error(error_message + " (Found: '" + current().value + "')");
+}
+
+// --- Parsing helpers ---
+
+DataType Parser::parse_data_type() {
+    if (match(TokenType::INTEGER)) { advance(); return DataType::INTEGER; }
+    if (match(TokenType::TEXT)) { advance(); return DataType::TEXT; }
+    if (match(TokenType::FLOAT)) { advance(); return DataType::FLOAT; }
+
+    throw std::runtime_error("Expected column data type (INTEGER, TEXT, FLOAT)");
+}
+
+WhereClause Parser::parse_where() {
+    WhereClause wc;
+
+    if (!match(TokenType::WHERE)) {
+        return wc;
+    }
+
+    advance();
+    wc.has_where = true;
+
+    wc.column = consume(TokenType::IDENTIFIER, "Expected a column name for the condition").value;
+
+    switch (current().type) {
+    case TokenType::EQUALS:
+    case TokenType::LOWER:
+    case TokenType::GREATER:
+        wc.op = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a comparison operator (=, <, >)");
+    }
+
+    switch (current().type) {
+    case TokenType::INT_LITERAL:
+    case TokenType::FLOAT_LITERAL:
+    case TokenType::STRING_LITERAL:
+        wc.value = current().value;
+        advance();
+        break;
+    default:
+        throw std::runtime_error("Expected a filter value (int, string, float)");
+    }
+
+    return wc;
+}
+
 std::unique_ptr<SQLStatement> Parser::parse() {
     if (m_tokens.empty() || current().type == TokenType::END_OF_FILE) {
         return nullptr;
@@ -41,7 +112,7 @@ std::unique_ptr<SQLStatement> Parser::parse() {
     throw std::runtime_error("Unsupported or unrecognized command.");
 }
 
-/// CREATE TABLE users (id INTEGER, name TEXT, balance FLOAT);
+// CREATE TABLE users (id INTEGER, name TEXT, balance FLOAT);
 std::unique_ptr<CreateStatement> Parser::parse_create_table() {
 
     auto stmt = std::make_unique<CreateStatement>();
@@ -80,7 +151,7 @@ std::unique_ptr<CreateStatement> Parser::parse_create_table() {
     return stmt;
 }
 
-/// INSERT INTO users VALUES (1, Alice, 4500.50);
+// INSERT INTO users VALUES (1, Alice, 4500.50);
 std::unique_ptr<InsertStatement> Parser::parse_insert() {
 
     auto stmt = std::make_unique<InsertStatement>();
@@ -129,8 +200,8 @@ std::unique_ptr<InsertStatement> Parser::parse_insert() {
     return stmt;
 }
 
-/// SELECT * FROM users;
-/// SELECT id, name FROM users WHERE balance > 1000;
+// SELECT * FROM users;
+// SELECT id, name FROM users WHERE balance > 1000;
 std::unique_ptr<SelectStatement> Parser::parse_select() {
 
     auto stmt = std::make_unique<SelectStatement>();
@@ -160,39 +231,7 @@ std::unique_ptr<SelectStatement> Parser::parse_select() {
     auto table = consume(TokenType::IDENTIFIER, "Expected a table name");
     stmt->tableName = table.value;
 
-    if (!match(TokenType::WHERE)) {
-        consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
-        return stmt;
-    }
-    
-    advance();
-
-    auto filterColumn = consume(TokenType::IDENTIFIER, "Expected a column name for the condition");
-    stmt->filterColumn = filterColumn.value;
-
-    switch (current().type) {
-    case TokenType::EQUALS:
-    case TokenType::LOWER:
-    case TokenType::GREATER:
-    // case TokenType::LOWER_EQUALS:
-    // case TokenType::GREATER_EQUALS:
-        stmt->filterOperator = current().value;
-        advance();
-        break;
-    default:
-        throw std::runtime_error("Expected a comparison operator (=, <, >)");
-    }
-
-    switch (current().type) {
-    case TokenType::INT_LITERAL:
-    case TokenType::FLOAT_LITERAL:
-    case TokenType::STRING_LITERAL:
-        stmt->filterValue = current().value;
-        advance();
-        break;
-    default:
-        throw std::runtime_error("Expected a filter value (int, string, float)");
-    }
+    stmt->whereClause = parse_where();
 
     consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
@@ -207,39 +246,7 @@ std::unique_ptr<DeleteStatement> Parser::parse_delete() {
     auto tableName = consume(TokenType::IDENTIFIER, "Expected a table name");
     stmt->tableName = tableName.value;
 
-    if (!match(TokenType::WHERE)) {
-        consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
-        return stmt;
-    }
-    
-    advance();
-
-    auto filterColumn = consume(TokenType::IDENTIFIER, "Expected a filter column");
-    stmt->filterColumn = filterColumn.value;
-
-    switch (current().type) {
-    case TokenType::EQUALS:
-    case TokenType::LOWER:
-    case TokenType::GREATER:
-        // case TokenType::LOWER_EQUALS:
-        // case TokenType::GREATER_EQUALS:
-        stmt->filterOperator = current().value;
-        advance();
-        break;
-    default:
-        throw std::runtime_error("Expected a comparison operator (=, <, >)");
-    }
-
-    switch (current().type) {
-    case TokenType::INT_LITERAL:
-    case TokenType::FLOAT_LITERAL:
-    case TokenType::STRING_LITERAL:
-        stmt->filterValue = current().value;
-        advance();
-        break;
-    default:
-        throw std::runtime_error("Expected a filter value (int, string, float)");
-    }
+    stmt->whereClause = parse_where();
 
     consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
     return stmt;
@@ -257,34 +264,3 @@ std::unique_ptr<DropTableStatement> Parser::parse_drop_table() {
     return stmt;
 }
 
-DataType Parser::parse_data_type() {
-    if (match(TokenType::INTEGER)) { advance(); return DataType::INTEGER; }
-    if (match(TokenType::TEXT)) { advance(); return DataType::TEXT; }
-    if (match(TokenType::FLOAT)) { advance(); return DataType::FLOAT; }
-
-    throw std::runtime_error("Expected column data type (INTEGER, TEXT, FLOAT)");
-}
-
-// --- Navigation Helpers ---
-
-const Token& Parser::current() const {
-    if (m_pos >= m_tokens.size()) return m_tokens.back(); // Return EOF if out of bounds
-    return m_tokens[m_pos];
-}
-
-void Parser::advance() {
-    if (m_pos < m_tokens.size()) m_pos++;
-}
-
-bool Parser::match(TokenType type) const {
-    return current().type == type;
-}
-
-Token Parser::consume(TokenType type, const std::string& error_message) {
-    if (match(type)) {
-        Token token = current();
-        advance();
-        return token;
-    }
-    throw std::runtime_error(error_message + " (Found: '" + current().value + "')");
-}

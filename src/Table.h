@@ -25,6 +25,8 @@ public:
     void print_table() const;
     void print_table(std::vector<std::string>& columns) const;
 
+    void whereSolver() const;
+
     // Getters
     std::string get_name() const;
     const std::vector<Column>& get_columns() const;
