@@ -12,15 +12,6 @@
 
 int main() {
 
-    // DEBUG COMMANDS
-    //  CREATE table employees (id INTEGER, name TEXT, salary FLOAT);
-    //  INSERT INTO employees VALUES (1, 'Mihnea', 465.69);
-    //  SELECT id, name, salary FROM employees;
-    //  SELECT id, name, salary FROM employees WHERE salary < 14;
-    //  DELETE FROM employees;
-    //  DELETE FROM employees WHERE id = 1;
-    //  DROP table employees;
-
     std::cout << "======================================\n";
     std::cout << " Welcome to MatrixDB (v1.0)\n";
     std::cout << " Type 'EXIT' to quit.\n";
@@ -131,7 +122,25 @@ int main() {
                 if (it != database.end()) {
                     Table& table = it->second;
                     int deleted_count = table.delete_rows(deleteStmt->whereClause);
-                    std::cout << "Deleted " << deleted_count << " rows from table " << deleteStmt->tableName << ".\n";
+                    std::cout << "Success: Deleted " << deleted_count << " rows from table " << deleteStmt->tableName << ".\n";
+                }
+                else {
+                    std::cerr << ANSI_COLOR_RED << "Error: " << ANSI_COLOR_RESET << "Table '" << deleteStmt->tableName << "' doesn't exist.\n";
+                    continue;
+                }
+            }
+
+            else if (statement->type == StatementType::DROP_TABLE) {
+                
+                auto* dropTableStmt = dynamic_cast<DropTableStatement*>(statement.get());
+                auto it = database.find(dropTableStmt->tableName);
+
+                if (it != database.end()) {
+                    database.erase(it);
+                    std::cout << "Success: Table '" << dropTableStmt->tableName << "' dropped completely.\n";
+                }
+                else {
+                    std::cerr << "\033[31mError:\033[0m Table '" << dropTableStmt->tableName << "' doesn't exist.\n";
                 }
             }
         }
