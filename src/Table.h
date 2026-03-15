@@ -4,6 +4,9 @@
 #include <iostream>
 #include <iomanip>
 
+// Forward declaration to avoid circular include with SQLStatement.h
+struct WhereClause;
+
 enum class DataType {
     INTEGER,
     TEXT,
@@ -22,10 +25,10 @@ public:
     void add_column(const std::string& name, DataType type);
     bool insert_row(const std::vector<std::string>& row_data);
 
-    void print_table() const;
-    void print_table(std::vector<std::string>& columns) const;
+    bool evaluate_where(const std::vector<std::string>& row, size_t col_index, const std::string& op, const std::string& target_value, DataType type) const;
 
-    void whereSolver() const;
+    void print_table(const WhereClause& whereClause) const;
+    void print_table(const WhereClause& whereClause, std::vector<std::string>& columns) const;
 
     // Getters
     std::string get_name() const;

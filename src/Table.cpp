@@ -1,4 +1,5 @@
 #include "Table.h"
+#include "SQLStatement.h"
 
 Table::Table(const std::string& name)
     : m_name(name) {
@@ -41,7 +42,47 @@ bool Table::insert_row(const std::vector<std::string>& row_data) {
     return true;
 }
 
-void Table::print_table() const {
+bool Table::evaluate_where(const std::vector<std::string>& row, size_t col_index, const std::string& op, const std::string& target_value, DataType type) const {
+
+    std::string cell_value = row[col_index];
+
+    try {
+        if (type == DataType::INTEGER) {
+            int cell_int = std::stoi(cell_value);
+            int target_int = std::stoi(target_value);
+
+            if (op == "=") return cell_int == target_int;
+            if (op == "<") return cell_int < target_int;
+            if (op == ">") return cell_int > target_int;
+            if (op == "<=") return cell_int <= target_int;
+            if (op == ">=") return cell_int >= target_int;
+        }
+
+        else if (type == DataType::FLOAT) {
+            float cell_float = std::stof(cell_value);
+            float target_float = std::stof(target_value);
+
+            if (op == "=") return cell_float == target_float;
+            if (op == "<") return cell_float < target_float;
+            if (op == ">") return cell_float > target_float;
+            if (op == "<=") return cell_float <= target_float;
+            if (op == ">=") return cell_float >= target_float;
+        }
+
+        else if (type == DataType::TEXT) {
+            if (op == "=") return cell_value == target_value;
+            if (op == "<") return cell_value < target_value;
+            if (op == ">") return cell_value > target_value;
+        }
+    }
+    catch (const std::exception& e) {
+        return false;
+    }
+
+    return false;
+}
+
+void Table::print_table(const WhereClause& whereClause) const {
 
     const int cell_width = 18;
 
@@ -62,17 +103,50 @@ void Table::print_table() const {
 
     std::cout << separator << "\n";
 
-    for (const auto& row : m_rows) {
-        for (const auto& cell : row) {
-            std::cout << "| " << std::left << std::setw(cell_width) << cell << " ";
+    if (!whereClause.has_where) {
+        for (const auto& row : m_rows) {
+            for (const auto& cell : row) {
+                std::cout << "| " << std::left << std::setw(cell_width) << cell << " ";
+            }
+            std::cout << "|\n";
         }
-        std::cout << "|\n";
     }
+    else {
+        int where_col_index = -1;
+        DataType where_col_type;
+        bool found = false;
 
+        for (size_t i = 0; i < m_columns.size(); ++i) {
+            if (m_columns[i].name == whereClause.column) {
+                where_col_index = i;
+                where_col_type = m_columns[i].type;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            std::cerr << "\033[31mError:\033[0m WHERE column '" << whereClause.column << "' does not exist.\n";
+            return;
+        }
+
+        for (const auto& row : m_rows) {
+            // Doesn't pass the test
+            if (!evaluate_where(row, where_col_index, whereClause.op, whereClause.value, where_col_type)) {
+                continue;
+            }
+
+            // Passes the test
+            for (const auto& cell : row) {
+                std::cout << "| " << std::left << std::setw(cell_width) << cell << " ";
+            }
+            std::cout << "|\n";
+        }
+    }
     std::cout << separator << "\n\n";   
 }
 
-void Table::print_table(std::vector<std::string>& columns) const {
+void Table::print_table(const WhereClause& whereClause, std::vector<std::string>& columns) const {
     
     std::vector<int> col_indicies;
 
@@ -111,13 +185,45 @@ void Table::print_table(std::vector<std::string>& columns) const {
 
     std::cout << separator << "\n";
 
-    for (const auto& row : m_rows) {
-        for (size_t i : col_indicies) {
-            std::cout << "| " << std::left << std::setw(cell_width) << row[i] << " ";
+    if (!whereClause.has_where) {
+        for (const auto& row : m_rows) {
+            for (size_t i : col_indicies) {
+                std::cout << "| " << std::left << std::setw(cell_width) << row[i] << " ";
+            }
+            std::cout << "|\n";
         }
-        std::cout << "|\n";
     }
+    else {
+        int where_col_index = -1;
+        DataType where_col_type;
+        bool found = false;
 
+        for (size_t i = 0; i < m_columns.size(); ++i) {
+            if (m_columns[i].name == whereClause.column) {
+                where_col_index = i;
+                where_col_type = m_columns[i].type;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            std::cerr << "\033[31mError:\033[0m WHERE column '" << whereClause.column << "' does not exist.\n";
+            return;
+        }
+
+        for (const auto& row : m_rows) {
+            // Doesn't pass the test
+            if (!evaluate_where(row, where_col_index, whereClause.op, whereClause.value, where_col_type)) {
+                continue;
+            }
+            // Passes the test
+            for (size_t i : col_indicies) {
+                std::cout << "| " << std::left << std::setw(cell_width) << row[i] << " ";
+            }
+            std::cout << "|\n";
+        }
+    }
     std::cout << separator << "\n\n";
 }
 

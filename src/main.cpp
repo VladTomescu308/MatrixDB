@@ -104,14 +104,16 @@ int main() {
                 auto* selectStmt = dynamic_cast<SelectStatement*>(statement.get());
                 auto it = database.find(selectStmt->tableName);
 
-                if (selectStmt->columns[0] == "*") {
-                    Table& table = it->second;
-                    table.print_table();
-                }
+                if (it != database.end()) {
 
-                else if (it != database.end()) {
                     Table& table = it->second;
-                    table.print_table(selectStmt->columns);
+
+                    if (selectStmt->columns.size() == 1 && selectStmt->columns[0] == "*") {
+                        table.print_table(selectStmt->whereClause);
+                    }
+                    else {
+                        table.print_table(selectStmt->whereClause, selectStmt->columns);
+                    }
                 }
                 
                 else {
