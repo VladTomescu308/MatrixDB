@@ -122,6 +122,18 @@ int main() {
                 }
 
             }
+
+            else if (statement->type == StatementType::DELETE) {
+
+                auto* deleteStmt = dynamic_cast<DeleteStatement*>(statement.get());
+                auto it = database.find(deleteStmt->tableName);
+
+                if (it != database.end()) {
+                    Table& table = it->second;
+                    int deleted_count = table.delete_rows(deleteStmt->whereClause);
+                    std::cout << "Deleted " << deleted_count << " rows from table " << deleteStmt->tableName << ".\n";
+                }
+            }
         }
         catch (const std::exception& e) {
             std::cerr << ANSI_COLOR_RED << "Error: " << ANSI_COLOR_RESET << e.what() << "\n";

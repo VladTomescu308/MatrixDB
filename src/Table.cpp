@@ -227,6 +227,49 @@ void Table::print_table(const WhereClause& whereClause, std::vector<std::string>
     std::cout << separator << "\n\n";
 }
 
+int Table::delete_rows(const WhereClause& whereClause) {
+
+    if (!whereClause.has_where) {
+        int rows_deleted = m_rows.size();
+        m_rows.clear();
+        return rows_deleted;
+    }
+
+    int where_col_index = -1;
+    DataType where_col_type;
+    bool found = false;
+
+    for (size_t i = 0; i < m_columns.size(); ++i) {
+        if (m_columns[i].name == whereClause.column) {
+            where_col_index = i;
+            where_col_type = m_columns[i].type;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        std::cerr << "\033[31mError:\033[0m WHERE column '" << whereClause.column << "' does not exist.\n";
+        return 0;
+    }
+
+    int deleted_count = 0;
+    auto it = m_rows.begin();
+
+    while (it != m_rows.end()) {
+        
+        if (evaluate_where(*it, where_col_index, whereClause.op, whereClause.value, where_col_type)) {
+            it = m_rows.erase(it);
+            deleted_count++;
+        }
+        else {
+            ++it;
+        }
+    }
+
+    return deleted_count;
+}
+
 std::string Table::get_name() const {
     return m_name;
 }

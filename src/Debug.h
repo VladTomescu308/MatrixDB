@@ -60,7 +60,7 @@ inline void TestDelete(const std::unique_ptr<SQLStatement>& statement) {
     std::cout << "Target Table: " << selectStmt->tableName << "\n";
 
     if (!selectStmt->whereClause.has_where) {
-        std::cout << "\n\nWHERE clause was not used\n";
+        std::cout << "\nWHERE clause was not used\n";
     }
     else {
         std::cout << "\n\nWHERE clause was used";
