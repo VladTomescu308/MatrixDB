@@ -7,7 +7,9 @@ enum class StatementType {
     CREATE_TABLE,
     INSERT,
     SELECT,
+    UPDATE,
     DELETE,
+    DROP,
     DROP_TABLE,
     UNKNOWN
 };
@@ -51,6 +53,17 @@ struct SelectStatement : public SQLStatement {
     WhereClause whereClause;
 };
 
+// UPDATE employees SET salary = 5500 WHERE id = 101;
+// UPDATE employees SET salary = 6000, name = 'John Doe' WHERE id = 101;
+struct UpdateStatement : public SQLStatement {
+    UpdateStatement() { type = StatementType::UPDATE; }
+
+    std::string tableName;
+    std::vector<std::pair<std::string,int>> columns;
+
+    WhereClause whereClause;
+};
+
 // DELETE FROM users;
 // DELETE FROM users WHERE id = 10;
 struct DeleteStatement : public SQLStatement {
@@ -74,7 +87,9 @@ inline std::ostream& operator<<(std::ostream& os, StatementType type) {
     case StatementType::CREATE_TABLE: os << "CREATE_TABLE"; break;
     case StatementType::INSERT:       os << "INSERT";       break;
     case StatementType::SELECT:       os << "SELECT";       break;
+    case StatementType::UPDATE:       os << "UPDATE";       break;
     case StatementType::DELETE:       os << "DELETE";       break;
+    case StatementType::DROP:         os << "DROP";         break;
     case StatementType::DROP_TABLE:   os << "DROP_TABLE";   break;
     case StatementType::UNKNOWN:      os << "UNKNOWN";      break;
     default:                          os << "[Invalid Type]"; break;

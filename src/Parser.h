@@ -24,6 +24,7 @@ private:
     std::unique_ptr<CreateStatement> parse_create_table();
     std::unique_ptr<InsertStatement> parse_insert();
     std::unique_ptr<SelectStatement> parse_select();
+    std::unique_ptr<UpdateStatement> parse_update();
     std::unique_ptr<DeleteStatement> parse_delete();
     std::unique_ptr<DropTableStatement> parse_drop_table();
 

@@ -2,14 +2,16 @@
 #include <cctype> // Required for isspace, isdigit, isalpha
 
 const std::unordered_map<std::string, TokenType> Tokenizer::keywords = {
-    {"SELECT", TokenType::SELECT},
-    {"INSERT", TokenType::INSERT},
-    {"DELETE", TokenType::DELETE},
     {"CREATE", TokenType::CREATE},
+    {"INSERT", TokenType::INSERT},
+    {"SELECT", TokenType::SELECT},
+    {"UPDATE", TokenType::UPDATE},
+    {"DELETE", TokenType::DELETE},
     {"DROP",   TokenType::DROP},
     {"TABLE",  TokenType::TABLE},
     {"INTO",   TokenType::INTO},
     {"VALUES", TokenType::VALUES},
+    {"SET",    TokenType::SET},
     {"FROM",   TokenType::FROM},
     {"WHERE",  TokenType::WHERE},
     {"INTEGER", TokenType::INTEGER},
@@ -169,6 +171,8 @@ std::ostream& operator<<(std::ostream& os, TokenType type) {
     case TokenType::INSERT:         return os << "INSERT";
     case TokenType::DELETE:         return os << "DELETE";
     case TokenType::CREATE:         return os << "CREATE";
+    case TokenType::UPDATE:         return os << "UPDATE";
+    case TokenType::SET:            return os << "SET";
     case TokenType::DROP:           return os << "DROP";
     case TokenType::TABLE:          return os << "TABLE";
     case TokenType::INTO:           return os << "INTO";
