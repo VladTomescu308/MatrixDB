@@ -6,7 +6,7 @@
 
 enum class TokenType {
     // Keywords
-    SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, TABLE, INTO, VALUES, FROM, WHERE,
+    SELECT, INSERT, DELETE, CREATE, DROP, TABLE, INTO, VALUES, FROM, WHERE,
 
     // Data Types
     INTEGER, TEXT, FLOAT,
@@ -15,7 +15,7 @@ enum class TokenType {
     LPAREN, RPAREN, COMMA, STAR, SEMICOLON,
 
     // Operators
-    LOWER, GREATER, EQUALS, //LOWER_EQUALS, GREATER_EQUALS,              WIP
+    LOWER, GREATER, EQUALS, LOWER_EQUALS, GREATER_EQUALS,
 
     // Identifiers & Literals
     IDENTIFIER,     // e.g., table names, column names

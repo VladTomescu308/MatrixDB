@@ -4,7 +4,6 @@
 const std::unordered_map<std::string, TokenType> Tokenizer::keywords = {
     {"SELECT", TokenType::SELECT},
     {"INSERT", TokenType::INSERT},
-    {"UPDATE", TokenType::UPDATE},
     {"DELETE", TokenType::DELETE},
     {"CREATE", TokenType::CREATE},
     {"DROP",   TokenType::DROP},
@@ -18,7 +17,6 @@ const std::unordered_map<std::string, TokenType> Tokenizer::keywords = {
     {"FLOAT",   TokenType::FLOAT}
 };
 
-// Constructor
 Tokenizer::Tokenizer(const std::string& input)
     : m_input(input), m_pos(0) {
 }
@@ -48,14 +46,28 @@ std::vector<Token> Tokenizer::tokenize() {
         // 4. Symbols
         else {
             switch (c) {
-            case '*': tokens.push_back({ TokenType::STAR,       "*", static_cast<int>(m_pos) }); break;
-            case ',': tokens.push_back({ TokenType::COMMA,      ",", static_cast<int>(m_pos) }); break;
-            case '(': tokens.push_back({ TokenType::LPAREN,     "(", static_cast<int>(m_pos) }); break;
-            case ')': tokens.push_back({ TokenType::RPAREN,     ")", static_cast<int>(m_pos) }); break;
-            case '=': tokens.push_back({ TokenType::EQUALS,     "=", static_cast<int>(m_pos) }); break;
-            case '<': tokens.push_back({ TokenType::LOWER,      "<", static_cast<int>(m_pos) }); break;
-            case '>': tokens.push_back({ TokenType::GREATER,    ">", static_cast<int>(m_pos) }); break;
-            case ';': tokens.push_back({ TokenType::SEMICOLON,  ";", static_cast<int>(m_pos) }); break;
+            case '*': tokens.push_back({ TokenType::STAR, "*", static_cast<int>(m_pos) }); break;
+            case ',': tokens.push_back({ TokenType::COMMA, ",", static_cast<int>(m_pos) }); break;
+            case '(': tokens.push_back({ TokenType::LPAREN, "(", static_cast<int>(m_pos) }); break;
+            case ')': tokens.push_back({ TokenType::RPAREN, ")", static_cast<int>(m_pos) }); break;
+            case ';': tokens.push_back({ TokenType::SEMICOLON, ";", static_cast<int>(m_pos) }); break;
+            case '=': tokens.push_back({ TokenType::EQUALS, "=", static_cast<int>(m_pos) }); break;
+            case '<':
+                if (peek() == '=') {
+                    advance();
+                    tokens.push_back({ TokenType::LOWER_EQUALS, "<=", static_cast<int>(m_pos) }); break;
+                }
+                else {
+                    tokens.push_back({ TokenType::LOWER, "<", static_cast<int>(m_pos) }); break;
+                }
+            case '>': 
+                if (peek() == '=') {
+                    advance();
+                    tokens.push_back({ TokenType::GREATER_EQUALS, ">=", static_cast<int>(m_pos) }); break;
+                }
+                else {
+                    tokens.push_back({ TokenType::GREATER, ">", static_cast<int>(m_pos) }); break;
+                }
             default:  tokens.push_back({ TokenType::UNKNOWN, std::string(1, c), static_cast<int>(m_pos) }); break;
             }
             advance();
@@ -155,7 +167,6 @@ std::ostream& operator<<(std::ostream& os, TokenType type) {
     switch (type) {
     case TokenType::SELECT:         return os << "SELECT";
     case TokenType::INSERT:         return os << "INSERT";
-    case TokenType::UPDATE:         return os << "UPDATE";
     case TokenType::DELETE:         return os << "DELETE";
     case TokenType::CREATE:         return os << "CREATE";
     case TokenType::DROP:           return os << "DROP";

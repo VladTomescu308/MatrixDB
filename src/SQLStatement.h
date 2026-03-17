@@ -67,9 +67,6 @@ struct DropTableStatement : public SQLStatement {
     DropTableStatement() { type = StatementType::DROP_TABLE; }
 
     std::string tableName;
-
-    // IF EXISTS
-    bool ifExistsCondition = false;
 };
 
 inline std::ostream& operator<<(std::ostream& os, StatementType type) {

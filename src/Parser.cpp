@@ -54,11 +54,14 @@ WhereClause Parser::parse_where() {
     case TokenType::EQUALS:
     case TokenType::LOWER:
     case TokenType::GREATER:
+    case TokenType::LOWER_EQUALS:
+    case TokenType::GREATER_EQUALS:
+
         wc.op = current().value;
         advance();
         break;
     default:
-        throw std::runtime_error("Expected a comparison operator (=, <, >)");
+        throw std::runtime_error("Expected a comparison operator (=, <, >, <=, >=)");
     }
 
     switch (current().type) {
