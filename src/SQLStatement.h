@@ -59,7 +59,7 @@ struct UpdateStatement : public SQLStatement {
     UpdateStatement() { type = StatementType::UPDATE; }
 
     std::string tableName;
-    std::vector<std::pair<std::string,int>> columns;
+    std::vector<std::pair<std::string,std::string>> columns;
 
     WhereClause whereClause;
 };

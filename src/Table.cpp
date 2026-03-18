@@ -26,12 +26,12 @@ bool Table::insert_row(const std::vector<std::string>& row_data) {
                 (void)std::stof(row_data[i]);
             }
         }
-        catch (const std::invalid_argument& e) {
+        catch (const std::invalid_argument) {
             std::cerr << "\033[31mValidation Error:\033[0m Column '" << m_columns[i].name
                 << "' expects a number, but got '" << row_data[i] << "'.\n";
             return false;
         }
-        catch (const std::out_of_range& e) {
+        catch (const std::out_of_range) {
             std::cerr << "\033[31mValidation Error:\033[0m Value '" << row_data[i]
                 << "' is out of range for column '" << m_columns[i].name << "'.\n";
             return false;
@@ -40,46 +40,6 @@ bool Table::insert_row(const std::vector<std::string>& row_data) {
 
     m_rows.push_back(row_data);
     return true;
-}
-
-bool Table::evaluate_where(const std::vector<std::string>& row, size_t col_index, const std::string& op, const std::string& target_value, DataType type) const {
-
-    std::string cell_value = row[col_index];
-
-    try {
-        if (type == DataType::INTEGER) {
-            int cell_int = std::stoi(cell_value);
-            int target_int = std::stoi(target_value);
-
-            if (op == "=") return cell_int == target_int;
-            if (op == "<") return cell_int < target_int;
-            if (op == ">") return cell_int > target_int;
-            if (op == "<=") return cell_int <= target_int;
-            if (op == ">=") return cell_int >= target_int;
-        }
-
-        else if (type == DataType::FLOAT) {
-            float cell_float = std::stof(cell_value);
-            float target_float = std::stof(target_value);
-
-            if (op == "=") return cell_float == target_float;
-            if (op == "<") return cell_float < target_float;
-            if (op == ">") return cell_float > target_float;
-            if (op == "<=") return cell_float <= target_float;
-            if (op == ">=") return cell_float >= target_float;
-        }
-
-        else if (type == DataType::TEXT) {
-            if (op == "=") return cell_value == target_value;
-            if (op == "<") return cell_value < target_value;
-            if (op == ">") return cell_value > target_value;
-        }
-    }
-    catch (const std::exception& e) {
-        return false;
-    }
-
-    return false;
 }
 
 void Table::print_table(const WhereClause& whereClause) const {
@@ -112,7 +72,7 @@ void Table::print_table(const WhereClause& whereClause) const {
         }
     }
     else {
-        int where_col_index = -1;
+        size_t where_col_index = -1;
         DataType where_col_type;
         bool found = false;
 
@@ -146,9 +106,9 @@ void Table::print_table(const WhereClause& whereClause) const {
     std::cout << separator << "\n\n";   
 }
 
-void Table::print_table(const WhereClause& whereClause, std::vector<std::string>& columns) const {
+void Table::print_table(const WhereClause& whereClause, const std::vector<std::string>& columns) const {
     
-    std::vector<int> col_indicies;
+    std::vector<size_t> col_indicies;
 
     for (const auto& col : columns) {
         bool found = false;
@@ -194,7 +154,7 @@ void Table::print_table(const WhereClause& whereClause, std::vector<std::string>
         }
     }
     else {
-        int where_col_index = -1;
+        size_t where_col_index = -1;
         DataType where_col_type;
         bool found = false;
 
@@ -227,15 +187,93 @@ void Table::print_table(const WhereClause& whereClause, std::vector<std::string>
     std::cout << separator << "\n\n";
 }
 
-int Table::delete_rows(const WhereClause& whereClause) {
+size_t Table::update_rows(const std::vector<std::pair<std::string, std::string>>& targetColumns, const WhereClause& whereClause) {
+    size_t updatedRows = 0;
+
+    size_t where_col_idx = -1;
+    DataType where_col_type;
+
+    if (whereClause.has_where) {
+        for (size_t i = 0; i < m_columns.size(); ++i) {
+            if (m_columns[i].name == whereClause.column) {
+                where_col_idx = i;
+                where_col_type = m_columns[i].type;
+                break;
+            }
+        }
+        if (where_col_idx == -1) {
+            throw std::runtime_error("\033[31mError:\033[0m WHERE column '" + whereClause.column + "' does not exist.\n");
+            return 0;
+        }
+    }
+
+    std::vector<std::pair<size_t, std::string>> valid_updates;
+
+    for (const auto& col : targetColumns) {
+        bool found = false;
+        for (size_t i = 0; i < m_columns.size(); ++i) {
+            if (col.first == m_columns[i].name) {
+                try {
+                    if (m_columns[i].type == DataType::INTEGER) {
+                        (void)std::stoi(col.second);
+                    }
+                    else if (m_columns[i].type == DataType::FLOAT) {
+                        (void)std::stof(col.second);
+                    }
+                }
+                catch (const std::exception) {
+                    throw std::runtime_error("Type mismatch: Cannot assign value '" + col.second + "' to column '" + col.first + "'.");
+                }
+
+                valid_updates.emplace_back(i, col.second);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw std::runtime_error("\033[31mError:\033[0m SET column '" + col.first + "' does not exist.\n");
+        }
+    }
+
+    if (valid_updates.empty()) {
+        return 0;
+    }
+
+    for (size_t r = 0; r < m_rows.size(); ++r) {
+
+        if (whereClause.has_where) {
+            if (!evaluate_where(m_rows[r], where_col_idx, whereClause.op, whereClause.value, where_col_type)) {
+                continue;
+            }
+        }
+
+        bool row_changed = false;
+        for (const auto& update : valid_updates) {
+            size_t col_index = update.first;
+            const std::string& new_value = update.second;
+
+            if (m_rows[r][col_index] != new_value) {
+                m_rows[r][col_index] = new_value;
+                row_changed = true;
+            }
+        }
+
+        if (row_changed) {
+            updatedRows++;
+        }
+    }
+    return updatedRows;
+}
+
+size_t Table::delete_rows(const WhereClause& whereClause) {
 
     if (!whereClause.has_where) {
-        int rows_deleted = m_rows.size();
+        size_t rows_deleted = m_rows.size();
         m_rows.clear();
         return rows_deleted;
     }
 
-    int where_col_index = -1;
+    size_t where_col_index = -1;
     DataType where_col_type;
     bool found = false;
 
@@ -268,6 +306,46 @@ int Table::delete_rows(const WhereClause& whereClause) {
     }
 
     return deleted_count;
+}
+
+bool Table::evaluate_where(const std::vector<std::string>& row, size_t col_index, const std::string& op, const std::string& target_value, DataType type) const {
+
+    std::string cell_value = row[col_index];
+
+    try {
+        if (type == DataType::INTEGER) {
+            int cell_int = std::stoi(cell_value);
+            int target_int = std::stoi(target_value);
+
+            if (op == "=") return cell_int == target_int;
+            if (op == "<") return cell_int < target_int;
+            if (op == ">") return cell_int > target_int;
+            if (op == "<=") return cell_int <= target_int;
+            if (op == ">=") return cell_int >= target_int;
+        }
+
+        else if (type == DataType::FLOAT) {
+            float cell_float = std::stof(cell_value);
+            float target_float = std::stof(target_value);
+
+            if (op == "=") return cell_float == target_float;
+            if (op == "<") return cell_float < target_float;
+            if (op == ">") return cell_float > target_float;
+            if (op == "<=") return cell_float <= target_float;
+            if (op == ">=") return cell_float >= target_float;
+        }
+
+        else if (type == DataType::TEXT) {
+            if (op == "=") return cell_value == target_value;
+            if (op == "<") return cell_value < target_value;
+            if (op == ">") return cell_value > target_value;
+        }
+    }
+    catch (const std::exception) {
+        return false;
+    }
+
+    return false;
 }
 
 std::string Table::get_name() const {

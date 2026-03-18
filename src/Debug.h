@@ -2,6 +2,7 @@
 #include "Tokenizer.h"
 #include "Table.h"
 #include "Parser.h"
+#include "SQLStatement.h"
 
 inline void TestCreateTable(const std::unique_ptr<SQLStatement>& statement) {
     auto* createStmt = dynamic_cast<CreateStatement*>(statement.get());
@@ -53,40 +54,55 @@ inline void TestSelect(const std::unique_ptr<SQLStatement>& statement) {
     }
 }
 
+inline void TestUpdate(const std::unique_ptr<SQLStatement>& statement) {
+    auto* updateStmt = dynamic_cast<UpdateStatement*>(statement.get());
+
+    std::cout << "SUCCESS: Parser built an UPDATE object.\n";
+    std::cout << "Target Table: " << updateStmt->tableName << "\n";
+    std::cout << "Columns Found: ";
+
+    for (const auto& col : updateStmt->columns) {
+        std::cout << col.first <<" "<< col.second << ", ";
+    }
+
+    if (!updateStmt->whereClause.has_where) {
+        std::cout << "\n\nWHERE clause was not used\n";
+    }
+    else {
+        std::cout << "\n\nWHERE clause was used";
+        std::cout << "\nFilter column: " << updateStmt->whereClause.column;
+        std::cout << "\nFilter operator: " << updateStmt->whereClause.op;
+        std::cout << "\nFilter value: " << updateStmt->whereClause.value;
+        std::cout << "\n";
+    }
+}
+
 inline void TestDelete(const std::unique_ptr<SQLStatement>& statement) {
-    auto* selectStmt = dynamic_cast<DeleteStatement*>(statement.get());
+    auto* deleteStmt = dynamic_cast<DeleteStatement*>(statement.get());
 
     std::cout << "SUCCESS: Parser built a DELETE object.\n";
-    std::cout << "Target Table: " << selectStmt->tableName << "\n";
+    std::cout << "Target Table: " << deleteStmt->tableName << "\n";
 
-    if (!selectStmt->whereClause.has_where) {
+    if (!deleteStmt->whereClause.has_where) {
         std::cout << "\nWHERE clause was not used\n";
     }
     else {
         std::cout << "\nWHERE clause was used";
-        std::cout << "\nFilter column: " << selectStmt->whereClause.column;
-        std::cout << "\nFilter operator: " << selectStmt->whereClause.op;
-        std::cout << "\nFilter value: " << selectStmt->whereClause.value;
+        std::cout << "\nFilter column: " << deleteStmt->whereClause.column;
+        std::cout << "\nFilter operator: " << deleteStmt->whereClause.op;
+        std::cout << "\nFilter value: " << deleteStmt->whereClause.value;
         std::cout << "\n";
     }
 }
 
 inline void TestDropTable(const std::unique_ptr<SQLStatement>& statement) {
-    auto* selectStmt = dynamic_cast<DropTableStatement*>(statement.get());
+    auto* dropStmt = dynamic_cast<DropTableStatement*>(statement.get());
 
     std::cout << "SUCCESS: Parser built a DROP TABLE object.\n";
-    std::cout << "Target Table: " << selectStmt->tableName << "\n";
-    
-    // To be added in the future
-    // if (selectStmt->ifExistsCondition) {
-    //     std::cout << "\nIF EXISTS clause was used\n";
-    // }
-    // else {
-    //     std::cout << "\nIF EXISTS clause was not used\n";
-    // }
+    std::cout << "Target Table: " << dropStmt->tableName << "\n";
 }
 
-inline void TestObject(std::unique_ptr<SQLStatement>& statement) {
+inline void TestObject(const std::unique_ptr<SQLStatement>& statement) {
 
     if (!statement) return; // to handle null pointers
 
@@ -101,6 +117,10 @@ inline void TestObject(std::unique_ptr<SQLStatement>& statement) {
 
     case StatementType::SELECT:
         TestSelect(statement);
+        break;
+
+    case StatementType::UPDATE:
+        TestUpdate(statement);
         break;
 
     case StatementType::DELETE:

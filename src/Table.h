@@ -24,13 +24,16 @@ public:
 
     void add_column(const std::string& name, DataType type);
     bool insert_row(const std::vector<std::string>& row_data);
+
+    size_t update_rows(const std::vector<std::pair<std::string, std::string>>& targetColumns, const WhereClause& whereClause);
+    size_t delete_rows(const WhereClause& whereClause);
     
     bool evaluate_where(const std::vector<std::string>& row, size_t col_index, const std::string& op, const std::string& target_value, DataType type) const;
 
     void print_table(const WhereClause& whereClause) const;
-    void print_table(const WhereClause& whereClause, std::vector<std::string>& columns) const;
+    void print_table(const WhereClause& whereClause, const std::vector<std::string>& columns) const;
 
-    int delete_rows(const WhereClause& whereClause);
+    
 
     // Getters
     std::string get_name() const;

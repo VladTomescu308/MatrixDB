@@ -114,6 +114,25 @@ int main() {
 
             }
 
+            else if (statement->type == StatementType::UPDATE) {
+
+                auto* updateStmt = dynamic_cast<UpdateStatement*>(statement.get());
+                auto it = database.find(updateStmt->tableName);
+
+                if (it != database.end()) {
+
+                    Table& table = it->second;
+                    size_t updatedCount = table.update_rows(updateStmt->columns, updateStmt->whereClause);
+                    std::cout << "Success: Updated " << updatedCount << " rows from table " << updateStmt->tableName << ".\n";
+
+                }
+                else {
+                    std::cerr << ANSI_COLOR_RED << "Error: " << ANSI_COLOR_RESET << "Table '" << updateStmt->tableName << "' doesn't exist.\n";
+                    continue;
+                }
+
+            }
+
             else if (statement->type == StatementType::DELETE) {
 
                 auto* deleteStmt = dynamic_cast<DeleteStatement*>(statement.get());
@@ -121,7 +140,7 @@ int main() {
 
                 if (it != database.end()) {
                     Table& table = it->second;
-                    int deleted_count = table.delete_rows(deleteStmt->whereClause);
+                    size_t deleted_count = table.delete_rows(deleteStmt->whereClause);
                     std::cout << "Success: Deleted " << deleted_count << " rows from table " << deleteStmt->tableName << ".\n";
                 }
                 else {
