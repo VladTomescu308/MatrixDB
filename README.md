@@ -18,7 +18,7 @@ This project implements a custom Lexical Analyzer (Lexer), a state-machine Parse
 ## ✨ Features
 
 * **Custom Tokenizer:** Converts raw SQL strings into actionable tokens.
-* **State-Machine Parser:** Validates SQL grammar and generates an Abstract Syntax Tree (AST) using smart pointers (`std::unique_ptr`).
+* **State-Machine Parser:** Validates SQL grammar and generates an Abstract Syntax Tree using smart pointers (`std::unique_ptr`).
 * **Full CRUD Support:** `CREATE`, `INSERT`, `SELECT`, `UPDATE`, `DELETE`, and `DROP`.
 * **Where Clause Filtering:** Row-by-row evaluation supporting `<`, `>`, `<=`, `>=`, and `=` across `INTEGER`, `FLOAT`, and `TEXT` data types.
 * **Strict Type Validation:** Prevents fatal type-mismatch errors during `UPDATE` and `INSERT` commands.
@@ -35,7 +35,7 @@ CREATE TABLE users (id INTEGER, name TEXT, balance FLOAT);
 
 ### 2. Insert Data
 ```sql
-INSERT INTO users VALUES (1, Alice, 4500.50);
+INSERT INTO users VALUES (1, 'Alice', 4500.50);
 ```
 
 ### 3. Read (Select) Data
@@ -46,7 +46,7 @@ SELECT name, balance FROM users WHERE balance > 1000;
 
 ### 4. Update Data
 ```sql
-UPDATE users SET balance = 5000, name = Alicia WHERE id = 1;
+UPDATE users SET balance = 5000, name = 'Alessia' WHERE id = 1;
 ```
 
 ### 5. Delete Data
