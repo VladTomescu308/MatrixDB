@@ -11,11 +11,13 @@
 #define ANSI_COLOR_BLUE     "\033[34m"
 
 int main() {
-
+    
+    std::cout << ANSI_COLOR_GREEN;
     std::cout << "======================================\n";
     std::cout << " Welcome to MatrixDB (v1.0)\n";
     std::cout << " Type 'EXIT' to quit.\n";
     std::cout << "======================================\n";
+    std::cout << ANSI_COLOR_RESET;
 
     std::string input;
     std::unordered_map<std::string, Table> database;
