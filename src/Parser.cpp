@@ -51,14 +51,11 @@ std::unique_ptr<CreateStatement> Parser::parse_create_table() {
 
     auto stmt = std::make_unique<CreateStatement>();
 
-    // 1. Get the table name
     Token tableToken = consume(TokenType::IDENTIFIER, "Expected table name");
     stmt->tableName = tableToken.value;
 
-    // 2. Open parentheses
     consume(TokenType::LPAREN, "Expected '(' after table name");
 
-    // 3. Loop through columns
     bool parsingColumns = true;
     while (parsingColumns) {
         Token colName = consume(TokenType::IDENTIFIER, "Expected column name");
@@ -66,12 +63,11 @@ std::unique_ptr<CreateStatement> Parser::parse_create_table() {
 
         stmt->columns.push_back({ colName.value, colType });
 
-        // Check what comes next: a comma (more columns) or a closing parenthesis
         if (match(TokenType::COMMA)) {
-            advance(); // Skip comma, loop continues
+            advance();
         }
         else if (match(TokenType::RPAREN)) {
-            advance(); // Skip ')', loop ends
+            advance();
             parsingColumns = false;
         }
         else {
@@ -79,7 +75,6 @@ std::unique_ptr<CreateStatement> Parser::parse_create_table() {
         }
     }
 
-    // 4. Require a semicolon at the end
     consume(TokenType::SEMICOLON, "Expected ';' at the end of statement");
 
     return stmt;
@@ -267,6 +262,8 @@ std::unique_ptr<DropTableStatement> Parser::parse_drop_table() {
     return stmt;
 }
 
+// --- Parsing helpers ---
+
 WhereClause Parser::parse_where() {
     WhereClause wc;
 
@@ -307,6 +304,14 @@ WhereClause Parser::parse_where() {
     return wc;
 }
 
+DataType Parser::parse_data_type() {
+    if (match(TokenType::INTEGER)) { advance(); return DataType::INTEGER; }
+    if (match(TokenType::TEXT)) { advance(); return DataType::TEXT; }
+    if (match(TokenType::FLOAT)) { advance(); return DataType::FLOAT; }
+
+    throw std::runtime_error("Expected column data type (INTEGER, TEXT, FLOAT)");
+}
+
 // --- Navigation Helpers ---
 
 const Token& Parser::current() const {
@@ -329,15 +334,5 @@ Token Parser::consume(TokenType type, const std::string& error_message) {
         return token;
     }
     throw std::runtime_error(error_message + " (Found: '" + current().value + "')");
-}
-
-// --- Parsing helpers ---
-
-DataType Parser::parse_data_type() {
-    if (match(TokenType::INTEGER)) { advance(); return DataType::INTEGER; }
-    if (match(TokenType::TEXT)) { advance(); return DataType::TEXT; }
-    if (match(TokenType::FLOAT)) { advance(); return DataType::FLOAT; }
-
-    throw std::runtime_error("Expected column data type (INTEGER, TEXT, FLOAT)");
 }
 

@@ -33,8 +33,6 @@ public:
     void print_table(const WhereClause& whereClause) const;
     void print_table(const WhereClause& whereClause, const std::vector<std::string>& columns) const;
 
-    
-
     // Getters
     std::string get_name() const;
     const std::vector<Column>& get_columns() const;
